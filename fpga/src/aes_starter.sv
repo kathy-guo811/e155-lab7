@@ -125,10 +125,11 @@ module aes_core(input  logic         clk,
         DONE
     } states;
 
-    states current_state, next_state;
+    states current_state = IDLE;
+    states next_state;
 
     always_ff @(posedge clk) begin
-        if (load) begin
+        if (current_state == IDLE && !load) begin
             state_reg <= plaintext;
             key_reg <= key;
             round <= 4'd0;
@@ -156,7 +157,7 @@ module aes_core(input  logic         clk,
 
     always_ff @(posedge clk) begin
         if (load)
-            current_state <= INITIAL_ARK;
+            current_state <= IDLE;
         else
             current_state <= next_state;
     end
@@ -164,6 +165,10 @@ module aes_core(input  logic         clk,
     always_comb begin
         next_state = current_state;
         case(current_state)
+            IDLE: begin
+                if (!load)
+                     next_state = INITIAL_ARK;
+            end
             INITIAL_ARK: next_state = SUB_BYTES;
             SUB_BYTES: begin
                 if (byte_group == 3'd4)
