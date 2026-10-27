@@ -103,9 +103,9 @@ module aes_core(input  logic         clk,
     
     SubBytes sb(
         .clk(clk),
-        byte_group(byte_group),
-        state_in(state_reg),
-        state_out(sb_out));
+        .byte_group(byte_group),
+        .state_in(state_reg),
+        .state_out(sb_out));
 
     ShiftRows sr(
         .state_in(sb_out),
