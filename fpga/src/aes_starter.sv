@@ -219,7 +219,7 @@ module sbox(input  logic [7:0] a,
   // This module is combinational and will be inferred using LUTs (logic cells)
   logic [7:0] sbox[0:255];
 
-  initial   $readmemh("sbox.txt", sbox);
+  initial   $readmemh("src/sbox.txt", sbox);
   assign y = sbox[a];
 endmodule
 
