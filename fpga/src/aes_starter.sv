@@ -80,7 +80,24 @@ module aes_core(input  logic         clk,
                 output logic [127:0] cyphertext);
 
     // TODO: Your code goes here
-    
+    logic [127:0] state_reg;
+    logic [127:0] key;
+    logic [127:0] ark_out;
+
+    addroundkey ark (
+        .state_in(state_reg),
+        .round_key(key),
+        .state_out(ark_out));
+
+endmodule
+
+module addroundkey(
+    input  logic [127:0] state_in,
+    input  logic [127:0] round_key,
+    output logic [127:0] state_out);
+
+    assign state_out = state_in ^ round_key;
+
 endmodule
 
 /////////////////////////////////////////////
