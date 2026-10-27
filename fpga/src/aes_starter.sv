@@ -84,6 +84,8 @@ module aes_core(input  logic         clk,
     logic [127:0] key_reg;
     logic [127:0] ark_out;
 
+    logic [127:0] sr_out;
+
     always_ff @(posedge clk) begin
         if (load) begin
             state_reg <= plaintext;
@@ -91,10 +93,14 @@ module aes_core(input  logic         clk,
         end
     end
 
-    addroundkey ark (
+    addroundkey ark(
         .state_in(state_reg),
         .round_key(key_reg),
         .state_out(ark_out));
+    
+    shiftrows sr(
+        .state_in(state_reg),
+        .state_out(sr_out));
 
 endmodule
 
@@ -132,8 +138,7 @@ module shiftrows(
         state_in [31:24],
         state_in [119:112],
         state_in [79:72],
-        state_in [39:32]
-    };
+        state_in [39:32]};
 endmodule
 
 /////////////////////////////////////////////
