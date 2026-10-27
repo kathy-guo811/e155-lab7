@@ -82,23 +82,19 @@ module aes_core(input  logic         clk,
     // TODO: Your code goes here
     logic [127:0] state_reg;
     logic [127:0] key_reg;
+    logic [127:0] ark_state_in;
+    logic [127:0] ark_key_in;
     logic [127:0] ark_out;
-
     logic [127:0] sr_out;
-
     logic [127:0] sb_out;
     logic [2:0] byte_group;
-
-    always_ff @(posedge clk) begin
-        if (load) begin
-            state_reg <= plaintext;
-            key_reg <= key;
-        end
-    end
+    logic [127:0] mc_out;
+    logic [127:0] expanded_key;
+    logic [3:0] round;
 
     AddRoundKey ark(
-        .state_in(state_reg),
-        .round_key(key_reg),
+        .state_in(ark_state_in),
+        .round_key(ark_key_in),
         .state_out(ark_out));
     
     SubBytes sb(
@@ -110,6 +106,100 @@ module aes_core(input  logic         clk,
     ShiftRows sr(
         .state_in(sb_out),
         .state_out(sr_out));
+
+    mixcolumns mc(
+        .a(sr_out),
+        .y(mc_out));
+
+    KeyExpansion ke(
+        .clk(clk),
+        .key_in(key_reg),
+        .round(round),
+        .key_out(expanded_key));
+
+    typedef enum logic [2:0]{
+        IDLE,
+        INITIAL_ARK,
+        SUB_BYTES,
+        ROUND_END,
+        DONE
+    } states;
+
+    states current_state, next_state;
+
+    always_ff @(posedge clk) begin
+        if (load) begin
+            state_reg <= plaintext;
+            key_reg <= key;
+            round <= 4'd0;
+            byte_group <= 3'd0;
+        end
+        else if (current_state == INITIAL_ARK) begin
+            state_reg <= ark_out;
+            round <= 4'd1;
+        end
+        else if (current_state == SUB_BYTES) begin
+            if (byte_group == 3'd4)
+                byte_group <= 0;
+            else
+                byte_group <= byte_group + 1'b1;
+        end
+        else if (current_state == ROUND_END) begin
+            state_reg <= ark_out;
+            key_reg <= expanded_key;
+            if (round < 4'd10) begin
+                round <= round + 1'b1;
+                byte_group <= 3'd0;
+            end
+        end 
+    end
+
+    always_ff @(posedge clk) begin
+        if (load)
+            current_state <= INITIAL_ARK;
+        else
+            current_state <= next_state;
+    end
+
+    always_comb begin
+        next_state = current_state;
+        case(current_state)
+            INITIAL_ARK: next_state = SUB_BYTES;
+            SUB_BYTES: begin
+                if (byte_group == 3'd4)
+                    next_state = ROUND_END;
+            end
+            ROUND_END: begin
+                if (round == 4'd10)
+                    next_state = DONE;
+                else
+                    next_state = SUB_BYTES;
+            end
+            DONE: next_state = DONE;
+            default: next_state = IDLE;
+        endcase
+    end
+
+    always_comb begin
+        case(round)
+            4'd0: begin
+                ark_state_in = state_reg;
+                ark_key_in = key_reg;
+            end
+            4'd10: begin
+                ark_state_in = sr_out;
+                ark_key_in = expanded_key;
+            end
+            default: begin
+                ark_state_in = mc_out;
+                ark_key_in = expanded_key;
+            end
+        endcase
+    end
+
+    // final cyphertext
+    assign done = (current_state == DONE);
+    assign cyphertext = state_reg;
 
 endmodule
 
@@ -262,7 +352,7 @@ module KeyExpansion(
     assign w2p = w2 ^ w1p;
     assign w3p = w3 ^ w2p;
 
-    key_out = {w0p, w1p, w2p, w3p};
+    assign key_out = {w0p, w1p, w2p, w3p};
 
 endmodule
 
