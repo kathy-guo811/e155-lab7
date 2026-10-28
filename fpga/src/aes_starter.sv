@@ -248,7 +248,7 @@ module sbox(input  logic [7:0] a,
   // This module is combinational and will be inferred using LUTs (logic cells)
   logic [7:0] sbox[0:255];
 
-  initial   $readmemh("src/sbox.txt", sbox);
+  initial   $readmemh("C:\Users\kaguo\Documents\GitHub\e155-lab7\fpga\src\sbox.txt", sbox);
   assign y = sbox[a];
 endmodule
 
@@ -267,7 +267,7 @@ module sbox_sync(
   // This module is synchronous and will be inferred using BRAMs (Block RAMs)
   logic [7:0] sbox [0:255];
 
-  initial   $readmemh("src/sbox.txt", sbox);
+  initial   $readmemh("C:\Users\kaguo\Documents\GitHub\e155-lab7\fpga\src\sbox.txt", sbox);
 	
 	// Synchronous version
 	always_ff @(posedge clk) begin
