@@ -13,7 +13,7 @@ module aes(input  logic clk,
     logic [127:0] key, plaintext, cyphertext;
             
     aes_spi spi(sck, sdi, sdo, done, key, plaintext, cyphertext);   
-    aes_core core(clk, load, key, plaintext, done, cyphertext);
+    aes_core core(clk, load_sync, key, plaintext, done, cyphertext);
 endmodule
 
 /////////////////////////////////////////////
@@ -91,6 +91,7 @@ module aes_core(input  logic         clk,
     logic [127:0] mc_out;
     logic [127:0] expanded_key;
     logic [3:0] round;
+    logic load_sync;
 
     AddRoundKey ark(
         .state_in(ark_state_in),
@@ -116,6 +117,12 @@ module aes_core(input  logic         clk,
         .key_in(key_reg),
         .round(round),
         .key_out(expanded_key));
+
+    sync sys_sync(
+        .clk(clk),
+        .async_in(load),
+        .sync_out(load_sync)
+    );
 
     typedef enum logic [2:0]{
         IDLE,
