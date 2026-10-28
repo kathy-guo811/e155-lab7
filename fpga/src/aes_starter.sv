@@ -99,7 +99,7 @@ module aes_core(input  logic         clk,
     logic load_sync;
 	
 	sync sys_sync(
-        .clk(int_osc),
+        .clk(clk),
         .in(load),
         .out(load_sync));  
 		
@@ -140,7 +140,7 @@ module aes_core(input  logic         clk,
     states next_state;
 
     always_ff @(posedge clk) begin
-        if (current_state == IDLE && !load) begin
+        if (current_state == IDLE && !load_sync) begin
             state_reg <= plaintext;
             key_reg <= key;
             round <= 4'd0;
@@ -167,7 +167,7 @@ module aes_core(input  logic         clk,
     end
 
     always_ff @(posedge clk) begin
-        if (load)
+        if (load_sync)
             current_state <= IDLE;
         else
             current_state <= next_state;
