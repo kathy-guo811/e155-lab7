@@ -18,10 +18,6 @@ module aes(//input  logic clk,
 		hf_osc (.CLKHFPU(1'b1), .CLKHFEN(1'b1), .CLKHF(int_osc));
             
     aes_spi spi(sck, sdi, sdo, done, key, plaintext, cyphertext); 
-    sync sys_sync(
-        .clk(int_osc),
-        .in(load),
-        .out(load_sync));  
     aes_core core(int_osc, load_sync, key, plaintext, done, cyphertext);
 endmodule
 
@@ -101,7 +97,12 @@ module aes_core(input  logic         clk,
     logic [127:0] expanded_key;
     logic [3:0] round;
     logic load_sync;
-
+	
+	sync sys_sync(
+        .clk(int_osc),
+        .in(load),
+        .out(load_sync));  
+		
     AddRoundKey ark(
         .state_in(ark_state_in),
         .round_key(ark_key_in),
