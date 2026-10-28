@@ -207,6 +207,20 @@ module aes_core(input  logic         clk,
 
 endmodule
 
+module sync (
+    input  logic clk,
+    input  logic in,
+    output logic out
+);
+
+    logic n1;
+
+    always_ff @(posedge clk) begin
+        n1 <= in;
+        out <= n1;
+    end
+
+endmodule
 /////////////////////////////////////////////
 // sbox
 //   Infamous AES byte substitutions with magic numbers
@@ -244,6 +258,7 @@ module sbox_sync(
 	
 	// Synchronous version
 	always_ff @(posedge clk) begin
+        y
 		y <= sbox[a];
 	end
 endmodule
