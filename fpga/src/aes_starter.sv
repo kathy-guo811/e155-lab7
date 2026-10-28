@@ -18,7 +18,7 @@ module aes(//input  logic clk,
 		hf_osc (.CLKHFPU(1'b1), .CLKHFEN(1'b1), .CLKHF(int_osc));
             
     aes_spi spi(sck, sdi, sdo, done, key, plaintext, cyphertext); 
-    aes_core core(int_osc, load_sync, key, plaintext, done, cyphertext);
+    aes_core core(int_osc, load, key, plaintext, done, cyphertext);
 endmodule
 
 /////////////////////////////////////////////
@@ -177,7 +177,7 @@ module aes_core(input  logic         clk,
         next_state = current_state;
         case(current_state)
             IDLE: begin
-                if (!load)
+                if (!load_sync)
                      next_state = INITIAL_ARK;
             end
             INITIAL_ARK: next_state = SUB_BYTES;
