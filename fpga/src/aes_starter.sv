@@ -137,7 +137,6 @@ module aes_core(input  logic         clk,
     } states;
 
     states current_state;
-    initial current_state = IDLE;
     states next_state;
 
     always_ff @(posedge clk) begin
@@ -226,8 +225,7 @@ module sync (
     output logic out
 );
 
-    logic n1 = 1'b0;
-    initial out = 1'b0;
+    logic n1;
 
     always_ff @(posedge clk) begin
         n1  <= in;
