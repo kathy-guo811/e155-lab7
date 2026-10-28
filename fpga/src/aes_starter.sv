@@ -16,8 +16,7 @@ module aes(input  logic clk,
     sync sys_sync(
         .clk(clk),
         .in(load),
-        .out(load_sync)
-    );  
+        .out(load_sync));  
     aes_core core(clk, load_sync, key, plaintext, done, cyphertext);
 endmodule
 
