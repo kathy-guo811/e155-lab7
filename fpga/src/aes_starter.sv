@@ -152,7 +152,7 @@ module aes_core(input  logic         clk,
             round <= 4'd1;
         end
         else if (current_state == SUB_BYTES) begin
-            if (byte_group == 3'd4)
+            if (byte_group == 3'd5)
                 byte_group <= 0;
             else
                 byte_group <= byte_group + 1'b1;
@@ -183,7 +183,7 @@ module aes_core(input  logic         clk,
             end
             INITIAL_ARK: next_state = SUB_BYTES;
             SUB_BYTES: begin
-                if (byte_group == 3'd4)
+                if (byte_group == 3'd5)
                     next_state = ROUND_END;
             end
             ROUND_END: begin
