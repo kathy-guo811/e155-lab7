@@ -120,8 +120,8 @@ module aes_core(input  logic         clk,
 
     sync sys_sync(
         .clk(clk),
-        .async_in(load),
-        .sync_out(load_sync)
+        .in(load),
+        .out(load_sync)
     );
 
     typedef enum logic [2:0]{
@@ -218,8 +218,7 @@ endmodule
 module sync (
     input  logic clk,
     input  logic in,
-    output logic out
-);
+    output logic out);
 
     logic n1;
 
@@ -229,6 +228,7 @@ module sync (
     end
 
 endmodule
+
 /////////////////////////////////////////////
 // sbox
 //   Infamous AES byte substitutions with magic numbers
