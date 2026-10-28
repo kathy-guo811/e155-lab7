@@ -133,6 +133,7 @@ module aes_core(input  logic         clk,
         INITIAL_ARK,
         SUB_BYTES,
         ROUND_END,
+        DONE_WAIT,
         DONE
     } states;
 
@@ -188,11 +189,12 @@ module aes_core(input  logic         clk,
             end
             ROUND_END: begin
                 if (round == 4'd10)
-                    next_state = DONE;
+                    next_state = DONE_WAIT;
                 else
                     next_state = SUB_BYTES;
             end
-            DONE: next_state = DONE;
+
+            DONE_WAIT: next_state = DONE;
             default: next_state = IDLE;
         endcase
     end
