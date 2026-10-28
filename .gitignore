@@ -1,1 +1,3 @@
 *.json
+mcu/.DS_Store
+.DS_Store
