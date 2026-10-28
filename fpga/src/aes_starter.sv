@@ -173,6 +173,7 @@ module aes_core(input  logic         clk,
             SUB_BYTES: begin
                 if (byte_group == 3'd4)
                     next_state = ROUND_END;
+            end
             ROUND_END: begin
                 if (round == 4'd10)
                     next_state = DONE;
