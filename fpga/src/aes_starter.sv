@@ -259,7 +259,6 @@ module sbox_sync(
 	
 	// Synchronous version
 	always_ff @(posedge clk) begin
-        y
 		y <= sbox[a];
 	end
 endmodule
