@@ -1,0 +1,8 @@
+{
+  "top": "testbench_aes_sbox",
+  "build": {
+    "board": "upduino-v3.1",
+    "top": "sbox",
+    "frontend": "slang"
+  }
+}

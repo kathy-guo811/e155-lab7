@@ -141,7 +141,7 @@ module aes_core(input  logic         clk,
     states next_state;
 
     always_ff @(posedge clk) begin
-        if (current_state == IDLE && !load_sync) begin
+        if (current_state == IDLE && !load_sync && next_state == INITIAL_ARK) begin
             state_reg <= plaintext;
             key_reg <= key;
             round <= 4'd0;
@@ -217,6 +217,14 @@ module aes_core(input  logic         clk,
     // final cyphertext
     assign done = (current_state == DONE);
     assign cyphertext = state_reg;
+
+    (* keep *) logic debug_load_sync;
+    (* keep *) logic [2:0] debug_state;
+
+    always_comb begin
+        debug_load_sync = load_sync;
+        debug_state = current_state;
+    end
 
 endmodule
 
