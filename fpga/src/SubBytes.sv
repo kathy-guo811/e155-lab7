@@ -24,10 +24,10 @@ module SubBytes(
     
     always_ff @(posedge clk) begin
         case (byte_group)
-            3'd1: state_out[127:96] <= sub_bytes;
-            3'd2: state_out[95:64]  <= sub_bytes;
-            3'd3: state_out[63:32]  <= sub_bytes;
-            3'd4: state_out[31:0]   <= sub_bytes;
+            3'd2: state_out[127:96] <= sub_bytes;
+            3'd3: state_out[95:64]  <= sub_bytes;
+            3'd4: state_out[63:32]  <= sub_bytes;
+            3'd5: state_out[31:0]   <= sub_bytes;
             default: ;
         endcase
     end
