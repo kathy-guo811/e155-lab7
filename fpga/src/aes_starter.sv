@@ -12,7 +12,12 @@ module aes(input  logic clk,
                     
     logic [127:0] key, plaintext, cyphertext;
             
-    aes_spi spi(sck, sdi, sdo, done, key, plaintext, cyphertext);   
+    aes_spi spi(sck, sdi, sdo, done, key, plaintext, cyphertext); 
+    sync sys_sync(
+        .clk(clk),
+        .in(load),
+        .out(load_sync)
+    );  
     aes_core core(clk, load_sync, key, plaintext, done, cyphertext);
 endmodule
 
@@ -117,12 +122,6 @@ module aes_core(input  logic         clk,
         .key_in(key_reg),
         .round(round),
         .key_out(expanded_key));
-
-    sync sys_sync(
-        .clk(clk),
-        .in(load),
-        .out(load_sync)
-    );
 
     typedef enum logic [2:0]{
         IDLE,
