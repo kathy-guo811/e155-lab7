@@ -3,7 +3,7 @@
 //   Top level module with SPI interface and SPI core
 /////////////////////////////////////////////
 
-module aes(//input  logic clk,
+module aes(input  logic clk,
            input  logic sck, 
            input  logic sdi,
            output logic sdo,
@@ -139,18 +139,43 @@ module aes_core(input  logic         clk,
     states current_state;
     initial current_state = IDLE;
     states next_state;
-
+    
+    // state and key registers
     always_ff @(posedge clk) begin
         if (current_state == IDLE && !load_sync) begin
             state_reg <= plaintext;
             key_reg <= key;
-            round <= 4'd0;
-            byte_group <= 3'd0;
+            //round <= 4'd0;
+            //byte_group <= 3'd0;
         end
         else if (current_state == INITIAL_ARK) begin
             state_reg <= ark_out;
-            round <= 4'd1;
+            // round <= 4'd1;
         end
+        // else if (current_state == SUB_BYTES) begin
+        //     if (byte_group == 3'd4)
+        //         byte_group <= 0;
+        //     else
+        //         byte_group <= byte_group + 1'b1;
+        // end
+        else if (current_state == ROUND_END) begin
+            state_reg <= ark_out;
+            key_reg <= expanded_key;
+            // if (round < 4'd10) begin
+            //     round <= round + 1'b1;
+            //     byte_group <= 3'd0;
+            // end
+        end 
+    end
+
+    // Round and byte-group counters
+    always_ff @(posedge clk) begin
+        if (current_state == IDLE && !load_sync) begin
+            round <= 4'd0;
+            byte_group <= 3'd0;
+        end
+        else if (current_state == INITIAL_ARK)
+            round <= 4'd1;
         else if (current_state == SUB_BYTES) begin
             if (byte_group == 3'd4)
                 byte_group <= 0;
@@ -158,8 +183,6 @@ module aes_core(input  logic         clk,
                 byte_group <= byte_group + 1'b1;
         end
         else if (current_state == ROUND_END) begin
-            state_reg <= ark_out;
-            key_reg <= expanded_key;
             if (round < 4'd10) begin
                 round <= round + 1'b1;
                 byte_group <= 3'd0;
