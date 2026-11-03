@@ -128,82 +128,76 @@ module aes_core(input  logic         clk,
         .round(round),
         .key_out(expanded_key));
 
-    typedef enum logic [2:0]{
+    typedef enum logic [2:0] {
         IDLE,
         INITIAL_ARK,
         SUB_BYTES,
         ROUND_END,
         DONE
     } states;
+ 
+    states current_state, next_state;
+ 
+    // status flags for FSM
+    logic bg_done, last_round;
+    assign bg_done    = (byte_group == 3'd4);
+    assign last_round = (round == 4'd10);
+ 
+    // state register
+    always_ff @(posedge clk) begin
+        if (load_sync) current_state <= IDLE;
+        else           current_state <= next_state;
+    end
+ 
+    // next-state logic
+    always_comb begin
+        case (current_state)
+            IDLE:        next_state = INITIAL_ARK;   // only reached once load drops
+            INITIAL_ARK: next_state = SUB_BYTES;
+            SUB_BYTES:   next_state = bg_done    ? ROUND_END : SUB_BYTES;
+            ROUND_END:   next_state = last_round ? DONE      : SUB_BYTES;
+            DONE:        next_state = DONE;
+            default:     next_state = IDLE;
+        endcase
+    end
+ 
+    assign done = (current_state == DONE);
 
-    states current_state;
-    states next_state;
-    
     // state and key registers
     always_ff @(posedge clk) begin
         if (current_state == IDLE && !load_sync) begin
             state_reg <= plaintext;
-            key_reg <= key;
+            key_reg   <= key;
         end
         else if (current_state == INITIAL_ARK) begin
             state_reg <= ark_out;
         end
         else if (current_state == ROUND_END) begin
             state_reg <= ark_out;
-            key_reg <= expanded_key;
-        end 
+            key_reg   <= expanded_key;
+        end
     end
-
-    // Round and byte-group counters
+ 
+    // round and byte-group counters
     always_ff @(posedge clk) begin
         if (current_state == IDLE && !load_sync) begin
-            round <= 4'd0;
+            round      <= 4'd0;
             byte_group <= 3'd0;
         end
         else if (current_state == INITIAL_ARK)
             round <= 4'd1;
         else if (current_state == SUB_BYTES) begin
-            if (byte_group == 3'd4)
-                byte_group <= 0;
+            if (bg_done)
+                byte_group <= 3'd0;
             else
                 byte_group <= byte_group + 1'b1;
         end
         else if (current_state == ROUND_END) begin
-            if (round < 4'd10) begin
-                round <= round + 1'b1;
+            if (!last_round) begin
+                round      <= round + 1'b1;
                 byte_group <= 3'd0;
             end
-        end 
-    end
-
-    always_ff @(posedge clk) begin
-        if (load_sync)
-            current_state <= IDLE;
-        else
-            current_state <= next_state;
-    end
-
-    always_comb begin
-        next_state = current_state;
-        case(current_state)
-            IDLE: begin
-                if (!load_sync)
-                     next_state = INITIAL_ARK;
-            end
-            INITIAL_ARK: next_state = SUB_BYTES;
-            SUB_BYTES: begin
-                if (byte_group == 3'd4)
-                    next_state = ROUND_END;
-            end
-            ROUND_END: begin
-                if (round == 4'd10)
-                    next_state = DONE;
-                else
-                    next_state = SUB_BYTES;
-            end
-            DONE: next_state = DONE;
-            default: next_state = IDLE;
-        endcase
+        end
     end
 
     always_comb begin
@@ -224,7 +218,6 @@ module aes_core(input  logic         clk,
     end
 
     // final cyphertext
-    assign done = (current_state == DONE);
     assign cyphertext = state_reg;
 
 endmodule
